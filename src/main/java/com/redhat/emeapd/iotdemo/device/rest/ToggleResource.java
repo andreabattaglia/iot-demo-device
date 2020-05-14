@@ -1,16 +1,16 @@
-//package com.redhat.emeapd.iotdemo.device;
+//package com.redhat.emeapd.iotdemo.device.rest;
 //
 //import javax.ws.rs.POST;
 //import javax.ws.rs.Path;
 //import javax.ws.rs.Produces;
 //import javax.ws.rs.core.MediaType;
 //
-//@Path("/productline")
-//public class ProductionLineResource {
+//@Path("/toggle")
+//public class ToggleResource {
 //
 //    @POST
 //    @Produces(MediaType.TEXT_PLAIN)
-//    public String hello() {
-//        return "hello";
+//    public String toggle() {
+//	return "hello";
 //    }
 //}
