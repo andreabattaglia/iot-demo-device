@@ -17,6 +17,6 @@ public class RandomIntGeneratorProducer {
      * @return
      */
     public OfInt intRandomNumberGenerator(int avg, int delta) {
-	return new Random().ints(avg - delta - 2, avg + delta + 3).iterator();
+	return new Random().ints(avg - delta - 1, avg + delta + 2).iterator();
     }
 }

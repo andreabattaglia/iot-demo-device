@@ -3,6 +3,8 @@
  */
 package com.redhat.emeapd.iotdemo.device.service.production;
 
+import org.slf4j.Logger;
+
 import java.util.PrimitiveIterator;
 import java.util.Random;
 
@@ -18,6 +20,12 @@ import com.redhat.emeapd.iotdemo.device.util.random.RandomIntGeneratorProducer;
  */
 @ApplicationScoped
 class ProductionServiceImpl implements ProductionService {
+    /**
+     * Logger for this class
+     */
+    @Inject
+    Logger LOGGER;
+
     @Inject
     RandomIntGeneratorProducer randomIntGeneratorProducer;
 
@@ -35,10 +43,11 @@ class ProductionServiceImpl implements ProductionService {
      */
     @Override
     public void setProductLineParams(int temperatureAvg, int temperatureDelta, int rpmAvg, int rpmDelta) {
-//	this.temperatureAvg = temperatureAvg;
-//	this.temperatureDelta = temperatureDelta;
-//	this.rpmAvg = rpmAvg;
-//	this.rpmDelta = rpmDelta;
+	if (LOGGER.isInfoEnabled()) {
+	    LOGGER.info(
+		    "\nSetting production parameters:\n\tint temperatureAvg={}\n\tint temperatureDelta={}\n\tint rpmAvg={}\n\tint rpmDelta={}",
+		    temperatureAvg, temperatureDelta, rpmAvg, rpmDelta);
+	}
 
 	randomTemperatureIterator = randomIntGeneratorProducer.intRandomNumberGenerator(temperatureAvg,
 		temperatureDelta);

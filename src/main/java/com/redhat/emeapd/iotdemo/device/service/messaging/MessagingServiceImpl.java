@@ -60,7 +60,7 @@ public class MessagingServiceImpl implements MessagingService {
     Logger LOGGER;
 
     @PostConstruct
-    private void postConstruct() {
+    void postConstruct() {
 	context = connectionFactory.createContext(Session.AUTO_ACKNOWLEDGE);
 	producer = context.createProducer();
 	productionQueue = context.createQueue(productionQueueName);
@@ -72,7 +72,7 @@ public class MessagingServiceImpl implements MessagingService {
     }
 
     @PreDestroy
-    private void preDestroy() {
+    void preDestroy() {
 	context.close();
     }
 
@@ -98,7 +98,13 @@ public class MessagingServiceImpl implements MessagingService {
 	producer.send(queue, message);
 	requestMap.put(message.getJMSMessageID(), message);
 	TextMessage replyMessage = (TextMessage) replyConsumer.receive();
-	return Boolean.getBoolean(replyMessage.getText());
+	String replyMessagePayload = replyMessage.getText();
+	boolean isValidated = Boolean.parseBoolean(replyMessagePayload);
+	if (LOGGER.isInfoEnabled()) {
+	    LOGGER.info("Repy for message {} = {} (boolean value = {})", messagePayload, replyMessagePayload, isValidated);
+	}
+
+	return isValidated;
 
     }
 

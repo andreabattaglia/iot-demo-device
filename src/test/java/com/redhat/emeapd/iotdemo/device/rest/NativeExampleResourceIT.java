@@ -1,4 +1,4 @@
-package com.redhat.emeapd.iotdemo.device;
+package com.redhat.emeapd.iotdemo.device.rest;
 
 import io.quarkus.test.junit.NativeImageTest;
 

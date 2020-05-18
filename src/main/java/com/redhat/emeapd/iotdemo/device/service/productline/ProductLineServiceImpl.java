@@ -3,6 +3,7 @@
  */
 package com.redhat.emeapd.iotdemo.device.service.productline;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import com.redhat.emeapd.iotdemo.device.domain.ProductLineBean;
 import com.redhat.emeapd.iotdemo.device.util.events.ProductLineChanged;
 
+import io.quarkus.runtime.Startup;
 import io.quarkus.runtime.StartupEvent;
 
 /**
@@ -21,20 +23,21 @@ import io.quarkus.runtime.StartupEvent;
  *
  */
 @ApplicationScoped
+@Startup(value = 1)
 class ProductLineServiceImpl implements ProductLineService {
 
     @ConfigProperty(name = "production.temperature.avg.default")
-    private int temperatureAvg;
+    int temperatureAvg;
     @ConfigProperty(name = "production.temperature.delta.default")
-    private int temperatureDelta;
+    int temperatureDelta;
     @ConfigProperty(name = "production.rpm.avg.default")
-    private int rpmAvg;
+    int rpmAvg;
     @ConfigProperty(name = "production.rpm.delta.default")
-    private int rpmDelta;
+    int rpmDelta;
     @ConfigProperty(name = "cooling.decrement.avg.default")
-    private int coolingAvg;
+    int coolingAvg;
     @ConfigProperty(name = "cooling.decrement.delta.default")
-    private int coolingDelta;
+    int coolingDelta;
 
     private ProductLineBean productLine;
 
@@ -45,8 +48,8 @@ class ProductLineServiceImpl implements ProductLineService {
     @Inject
     Logger LOGGER;
 
-    void onStart(@Observes StartupEvent ev) {
-	LOGGER.info("The application is starting...{}");
+    @PostConstruct
+    void init() {
 	productLine = buildProductLineBean(temperatureAvg, temperatureDelta, rpmAvg, rpmDelta, coolingAvg,
 		coolingDelta);
     }

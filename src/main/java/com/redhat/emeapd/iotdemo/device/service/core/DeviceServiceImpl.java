@@ -4,6 +4,7 @@
 package com.redhat.emeapd.iotdemo.device.service.core;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,6 +50,8 @@ public class DeviceServiceImpl implements DeviceService {
     @Inject
     MessagingService messagingService;
 
+    private final AtomicInteger counter = new AtomicInteger();
+
     private Lock productionLock;
     private Condition productionCondition;
 
@@ -74,12 +77,16 @@ public class DeviceServiceImpl implements DeviceService {
 
     private void setProductLineParams() {
 	ProductLineBean productLine = productLineService.getProductLine();
+	if (LOGGER.isInfoEnabled()) {
+	    LOGGER.info("setProductLineParams() - ProductLineBean productLine={}", productLine);
+	}
+
 	productionService.setProductLineParams(productLine.getTemperatureAvg(), productLine.getTemperatureDelta(),
 		productLine.getRpmAvg(), productLine.getRpmDelta());
 	coolingService.setProductLineParams(productLine.getCoolingAvg(), productLine.getCoolingDelta());
     }
 
-    @Scheduled(every = "5s")
+    @Scheduled(every = "10s")
     void run() {
 	ProductionBean productionBean = null;
 	CoolingBean coolingBean = null;
@@ -87,30 +94,33 @@ public class DeviceServiceImpl implements DeviceService {
 	if (updateProductLine.getAndSet(false))
 	    setProductLineParams();
 	productionBean = productionService.produce();
+
 	try {
+	    int iteration = counter.incrementAndGet();
+	    if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("Sending production data #{} to the server for validation \n\t{}", iteration,
+			productionBean);
+	    }
 	    // sends data to the server for validation
 	    valid = messagingService.sendProductionData(productionBean);
+
 	    // productionBean = null;
 	    if (!valid) {
-		LOGGER.error("PRODUCT NOT VALIDATED");
+		LOGGER.error("PRODUCT #{} NOT VALIDATED", iteration);
 		return;
 	    }
-	    // asynchronously awaits for a reply from the server
-//	productionCondition.awaitUninterruptibly();
-	    // starts the cooling phase
+	    LOGGER.error("PRODUCT #{} VALIDATED", iteration);
 	    coolingBean = coolingService.cool();
 	    // sends data to the server for validation
 	    valid = messagingService.sendCoolingData(coolingBean);
 	    if (!valid) {
-		LOGGER.error("COOLING ERROR");
+		LOGGER.error("COOLING #{} ERROR", iteration);
 		return;
 	    }
-	    // coolingBean = null;
-	    // asynchronously awaits for a reply from the server
-//	productionCondition.awaitUninterruptibly();
+	    LOGGER.error("COOLING #{} OK", iteration);
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    LOGGER.error("Device Error", e);
 	}
     }
 }

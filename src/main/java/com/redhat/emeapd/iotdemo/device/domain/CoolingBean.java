@@ -8,27 +8,27 @@ package com.redhat.emeapd.iotdemo.device.domain;
  *
  */
 public class CoolingBean {
-    private int temperature;
+    private int cooling;
 
     /**
-     * @return the temperature
+     * @return the cooling
      */
-    public int getTemperature() {
-	return temperature;
+    public int getCooling() {
+	return cooling;
     }
 
     /**
-     * @param temperature the temperature to set
+     * @param cooling the cooling to set
      */
-    public void setTemperature(int temperature) {
-	this.temperature = temperature;
+    public void setCooling(int cooling) {
+	this.cooling = cooling;
     }
 
     @Override
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
-	result = prime * result + temperature;
+	result = prime * result + cooling;
 	return result;
     }
 
@@ -41,14 +41,14 @@ public class CoolingBean {
 	if (getClass() != obj.getClass())
 	    return false;
 	CoolingBean other = (CoolingBean) obj;
-	if (temperature != other.temperature)
+	if (cooling != other.cooling)
 	    return false;
 	return true;
     }
 
     @Override
     public String toString() {
-	return "CoolingBean [temperature=" + temperature + "]";
+	return "CoolingBean [cooling=" + cooling + "]";
     }
 
 }
