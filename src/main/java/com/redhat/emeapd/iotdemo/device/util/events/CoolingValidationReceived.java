@@ -14,5 +14,5 @@ import javax.inject.Qualifier;
 @Qualifier
 @Retention(RUNTIME)
 @Target({METHOD, FIELD, PARAMETER, TYPE})
-public @interface ProductValidated {
+public @interface CoolingValidationReceived {
 }

@@ -23,7 +23,13 @@ import com.redhat.emeapd.iotdemo.device.service.cooling.CoolingService;
 import com.redhat.emeapd.iotdemo.device.service.messaging.MessagingService;
 import com.redhat.emeapd.iotdemo.device.service.production.ProductionService;
 import com.redhat.emeapd.iotdemo.device.service.productline.ProductLineService;
+import com.redhat.emeapd.iotdemo.device.util.events.CoolingValidationReceived;
+import com.redhat.emeapd.iotdemo.device.util.events.CoolingValidationResponseReady;
 import com.redhat.emeapd.iotdemo.device.util.events.ProductLineChanged;
+import com.redhat.emeapd.iotdemo.device.util.events.ProductionValidationReceived;
+import com.redhat.emeapd.iotdemo.device.util.events.ProductionValidationResponseReady;
+import com.redhat.emeapd.iotdemo.device.util.events.ValidationEventData;
+import com.redhat.emeapd.iotdemo.device.util.events.ValidationReplyReadyData;
 
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
@@ -71,7 +77,7 @@ public class DeviceServiceImpl implements DeviceService {
 	setProductLineParams();
     }
 
-    void observeImportantMessage(@Observes @ProductLineChanged ProductLineBean productLine) {
+    void updateProductLine(@Observes @ProductLineChanged ProductLineBean productLine) {
 	updateProductLine.set(true);
     }
 
@@ -89,7 +95,6 @@ public class DeviceServiceImpl implements DeviceService {
     @Scheduled(every = "10s")
     void run() {
 	ProductionBean productionBean = null;
-	CoolingBean coolingBean = null;
 	boolean valid = false;
 	if (updateProductLine.getAndSet(false))
 	    setProductLineParams();
@@ -102,25 +107,33 @@ public class DeviceServiceImpl implements DeviceService {
 			productionBean);
 	    }
 	    // sends data to the server for validation
-	    valid = messagingService.sendProductionData(productionBean);
-
-	    // productionBean = null;
-	    if (!valid) {
-		LOGGER.error("PRODUCT #{} NOT VALIDATED", iteration);
-		return;
-	    }
-	    LOGGER.error("PRODUCT #{} VALIDATED", iteration);
-	    coolingBean = coolingService.cool();
-	    // sends data to the server for validation
-	    valid = messagingService.sendCoolingData(coolingBean);
-	    if (!valid) {
-		LOGGER.error("COOLING #{} ERROR", iteration);
-		return;
-	    }
-	    LOGGER.error("COOLING #{} OK", iteration);
+	    messagingService.sendProductionData(iteration, productionBean);
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
 	    LOGGER.error("Device Error", e);
 	}
+    }
+
+    void evaluateProductionValidationReply(
+	    @Observes @ProductionValidationResponseReady ValidationReplyReadyData validationEventData)
+	    throws Exception {
+	CoolingBean coolingBean = null;
+	if (!validationEventData.isValid()) {
+	    LOGGER.error("PRODUCT #{} NOT VALIDATED", validationEventData.getIterationId());
+	    return;
+	}
+	LOGGER.error("PRODUCT #{} VALIDATED", validationEventData.getIterationId());
+	coolingBean = coolingService.cool();
+	// sends data to the server for validation
+	messagingService.sendCoolingData(validationEventData.getIterationId(), coolingBean);
+    }
+
+    void evaluateCoolingValidationReply(
+	    @Observes @CoolingValidationResponseReady ValidationReplyReadyData validationEventData) {
+	if (!validationEventData.isValid()) {
+	    LOGGER.error("COOLING #{} ERROR", validationEventData.getIterationId());
+	    return;
+	}
+	LOGGER.error("COOLING #{} OK", validationEventData.getIterationId());
     }
 }

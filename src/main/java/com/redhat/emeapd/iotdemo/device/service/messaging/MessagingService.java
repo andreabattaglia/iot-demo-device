@@ -11,7 +11,7 @@ import com.redhat.emeapd.iotdemo.device.domain.ProductionBean;
  *
  */
 public interface MessagingService {
-    boolean sendProductionData(final ProductionBean productionBean) throws Exception;
+    void sendProductionData(final int iteration, final ProductionBean productionBean) throws Exception;
 
-    boolean sendCoolingData(final CoolingBean coolingBean) throws Exception;
+    void sendCoolingData(final int iteration, final CoolingBean coolingBean) throws Exception;
 }
