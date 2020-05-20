@@ -3,10 +3,13 @@
  */
 package com.redhat.emeapd.iotdemo.device.domain;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
 /**
  * @author abattagl
  *
  */
+@RegisterForReflection
 public class CoolingBean {
     private int cooling;
 

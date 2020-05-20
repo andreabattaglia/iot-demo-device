@@ -161,7 +161,11 @@ public class MessagingServiceImpl implements MessagingService {
 	}
 
 	ValidationReplyReadyData reply = null;
-	int iterationId = coolingRequestMap.remove(validationEventData.getMessageCorrelationId());
+	int iterationId = 0;
+
+	if (coolingRequestMap.containsKey(validationEventData.getMessageCorrelationId()))
+	    iterationId = coolingRequestMap.remove(validationEventData.getMessageCorrelationId());
+	
 	reply = new ValidationReplyReadyData();
 	reply.setIterationId(iterationId);
 	reply.setValid(Boolean.parseBoolean(validationEventData.getMessagePayload()));

@@ -119,10 +119,10 @@ public class DeviceServiceImpl implements DeviceService {
 	    throws Exception {
 	CoolingBean coolingBean = null;
 	if (!validationEventData.isValid()) {
-	    LOGGER.error("PRODUCT #{} NOT VALIDATED", validationEventData.getIterationId());
+	    LOGGER.info("PRODUCT #{} NOT VALIDATED", validationEventData.getIterationId());
 	    return;
 	}
-	LOGGER.error("PRODUCT #{} VALIDATED", validationEventData.getIterationId());
+	LOGGER.info("PRODUCT #{} VALIDATED", validationEventData.getIterationId());
 	coolingBean = coolingService.cool();
 	// sends data to the server for validation
 	messagingService.sendCoolingData(validationEventData.getIterationId(), coolingBean);
@@ -131,9 +131,9 @@ public class DeviceServiceImpl implements DeviceService {
     void evaluateCoolingValidationReply(
 	    @Observes @CoolingValidationResponseReady ValidationReplyReadyData validationEventData) {
 	if (!validationEventData.isValid()) {
-	    LOGGER.error("COOLING #{} ERROR", validationEventData.getIterationId());
+	    LOGGER.info("COOLING #{} ERROR", validationEventData.getIterationId());
 	    return;
 	}
-	LOGGER.error("COOLING #{} OK", validationEventData.getIterationId());
+	LOGGER.info("COOLING #{} OK", validationEventData.getIterationId());
     }
 }
