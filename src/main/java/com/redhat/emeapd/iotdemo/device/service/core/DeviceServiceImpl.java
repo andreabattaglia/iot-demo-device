@@ -92,7 +92,7 @@ public class DeviceServiceImpl implements DeviceService {
 	coolingService.setProductLineParams(productLine.getCoolingAvg(), productLine.getCoolingDelta());
     }
 
-    @Scheduled(every = "10s")
+    @Scheduled(every = "5s")
     void run() {
 	ProductionBean productionBean = null;
 	boolean valid = false;
