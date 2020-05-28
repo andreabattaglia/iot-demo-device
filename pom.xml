@@ -54,22 +54,26 @@
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-container-image-docker</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.quarkus</groupId>
-			<artifactId>quarkus-artemis-jms</artifactId>
-		</dependency>
 <!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.activemq</groupId> -->
-<!-- 			<artifactId>artemis-server</artifactId> -->
-<!-- 			<version>2.10.0</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 			<exclusions> -->
-<!-- 				<exclusion> -->
-<!-- 					<groupId>org.jboss.logmanager</groupId> -->
-<!-- 					<artifactId>jboss-logmanager</artifactId> -->
-<!-- 				</exclusion> -->
-<!-- 			</exclusions> -->
+<!-- 		<groupId>io.quarkus</groupId> -->
+<!-- 		<artifactId>quarkus-artemis-jms</artifactId> -->
 <!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.amqphub.quarkus</groupId>
+			<artifactId>quarkus-qpid-jms</artifactId>
+		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.activemq</groupId> -->
+		<!-- <artifactId>artemis-server</artifactId> -->
+		<!-- <version>2.10.0</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- <exclusions> -->
+		<!-- <exclusion> -->
+		<!-- <groupId>org.jboss.logmanager</groupId> -->
+		<!-- <artifactId>jboss-logmanager</artifactId> -->
+		<!-- </exclusion> -->
+		<!-- </exclusions> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-scheduler</artifactId>

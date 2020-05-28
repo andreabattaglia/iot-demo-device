@@ -45,6 +45,10 @@ public class MessagingServiceImpl implements MessagingService {
 
     private final ObjectMapper MAPPER = new ObjectMapper();
 
+//    @ConfigProperty(name = "quarkus.artemis.url")
+//    @ConfigProperty(name = "quarkus.qpid-jms.url")
+//    String amqURL;
+
     @ConfigProperty(name = "production.queue.name", defaultValue = "production")
     String productionQueueName;
 
@@ -165,7 +169,7 @@ public class MessagingServiceImpl implements MessagingService {
 
 	if (coolingRequestMap.containsKey(validationEventData.getMessageCorrelationId()))
 	    iterationId = coolingRequestMap.remove(validationEventData.getMessageCorrelationId());
-	
+
 	reply = new ValidationReplyReadyData();
 	reply.setIterationId(iterationId);
 	reply.setValid(Boolean.parseBoolean(validationEventData.getMessagePayload()));

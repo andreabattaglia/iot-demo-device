@@ -14,6 +14,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 
 import com.redhat.emeapd.iotdemo.device.domain.CoolingBean;
@@ -92,7 +93,7 @@ public class DeviceServiceImpl implements DeviceService {
 	coolingService.setProductLineParams(productLine.getCoolingAvg(), productLine.getCoolingDelta());
     }
 
-    @Scheduled(every = "5s")
+    @Scheduled(every = "1000s")
     void run() {
 	ProductionBean productionBean = null;
 	boolean valid = false;
