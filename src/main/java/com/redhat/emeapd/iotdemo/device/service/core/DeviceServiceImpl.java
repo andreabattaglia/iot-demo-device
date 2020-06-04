@@ -14,23 +14,17 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 
 import com.redhat.emeapd.iotdemo.device.domain.CoolingBean;
 import com.redhat.emeapd.iotdemo.device.domain.ProductLineBean;
 import com.redhat.emeapd.iotdemo.device.domain.ProductionBean;
+import com.redhat.emeapd.iotdemo.device.service.apiclient.ApiClientService;
 import com.redhat.emeapd.iotdemo.device.service.cooling.CoolingService;
-import com.redhat.emeapd.iotdemo.device.service.messaging.MessagingService;
 import com.redhat.emeapd.iotdemo.device.service.production.ProductionService;
 import com.redhat.emeapd.iotdemo.device.service.productline.ProductLineService;
-import com.redhat.emeapd.iotdemo.device.util.events.CoolingValidationReceived;
-import com.redhat.emeapd.iotdemo.device.util.events.CoolingValidationResponseReady;
 import com.redhat.emeapd.iotdemo.device.util.events.ProductLineChanged;
-import com.redhat.emeapd.iotdemo.device.util.events.ProductionValidationReceived;
-import com.redhat.emeapd.iotdemo.device.util.events.ProductionValidationResponseReady;
-import com.redhat.emeapd.iotdemo.device.util.events.ValidationEventData;
-import com.redhat.emeapd.iotdemo.device.util.events.ValidationReplyReadyData;
 
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
@@ -54,8 +48,12 @@ public class DeviceServiceImpl implements DeviceService {
     @Inject
     CoolingService coolingService;
 
+//    @Inject
+//    MessagingService messagingService;
+
     @Inject
-    MessagingService messagingService;
+    @RestClient
+    ApiClientService apiClientService;
 
     private final AtomicInteger counter = new AtomicInteger();
 
@@ -96,6 +94,7 @@ public class DeviceServiceImpl implements DeviceService {
     @Scheduled(every = "1000s")
     void run() {
 	ProductionBean productionBean = null;
+	CoolingBean coolingBean = null;
 	boolean valid = false;
 	if (updateProductLine.getAndSet(false))
 	    setProductLineParams();
@@ -108,33 +107,24 @@ public class DeviceServiceImpl implements DeviceService {
 			productionBean);
 	    }
 	    // sends data to the server for validation
-	    messagingService.sendProductionData(iteration, productionBean);
+	    valid = apiClientService.sendProductionData(productionBean);
+
+	    if (!valid) {
+		LOGGER.info("PRODUCT #{} NOT VALIDATED", iteration);
+		return;
+	    }
+	    LOGGER.info("PRODUCT #{} VALIDATED", iteration);
+	    coolingBean = coolingService.cool();
+	    valid = apiClientService.sendCoolingData(coolingBean);
+
+	    if (!valid) {
+		LOGGER.info("COOLING #{} ERROR", iteration);
+		return;
+	    }
+	    LOGGER.info("COOLING #{} OK", iteration);
 	} catch (Exception e) {
 	    // TODO Auto-generated catch block
 	    LOGGER.error("Device Error", e);
 	}
-    }
-
-    void evaluateProductionValidationReply(
-	    @Observes @ProductionValidationResponseReady ValidationReplyReadyData validationEventData)
-	    throws Exception {
-	CoolingBean coolingBean = null;
-	if (!validationEventData.isValid()) {
-	    LOGGER.info("PRODUCT #{} NOT VALIDATED", validationEventData.getIterationId());
-	    return;
-	}
-	LOGGER.info("PRODUCT #{} VALIDATED", validationEventData.getIterationId());
-	coolingBean = coolingService.cool();
-	// sends data to the server for validation
-	messagingService.sendCoolingData(validationEventData.getIterationId(), coolingBean);
-    }
-
-    void evaluateCoolingValidationReply(
-	    @Observes @CoolingValidationResponseReady ValidationReplyReadyData validationEventData) {
-	if (!validationEventData.isValid()) {
-	    LOGGER.info("COOLING #{} ERROR", validationEventData.getIterationId());
-	    return;
-	}
-	LOGGER.info("COOLING #{} OK", validationEventData.getIterationId());
     }
 }
