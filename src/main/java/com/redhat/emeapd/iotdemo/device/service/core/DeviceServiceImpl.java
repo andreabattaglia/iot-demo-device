@@ -5,9 +5,6 @@ package com.redhat.emeapd.iotdemo.device.service.core;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -17,6 +14,7 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.emeapd.iotdemo.device.domain.CoolingBean;
 import com.redhat.emeapd.iotdemo.device.domain.ProductLineBean;
 import com.redhat.emeapd.iotdemo.device.domain.ProductionBean;
@@ -35,6 +33,8 @@ import io.quarkus.scheduler.Scheduled;
  */
 @ApplicationScoped
 public class DeviceServiceImpl implements DeviceService {
+
+    private final ObjectMapper MAPPER = new ObjectMapper();
 
     @Inject
     Logger LOGGER;
@@ -57,15 +57,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     private final AtomicInteger counter = new AtomicInteger();
 
-    private Lock productionLock;
-    private Condition productionCondition;
-
     private final AtomicBoolean updateProductLine = new AtomicBoolean(true);
-
-    public DeviceServiceImpl() {
-	productionLock = new ReentrantLock();
-	productionCondition = productionLock.newCondition();
-    }
 
     public void onStart(@Observes StartupEvent ev) {
 	LOGGER.info("The application is starting...{}");
@@ -91,10 +83,11 @@ public class DeviceServiceImpl implements DeviceService {
 	coolingService.setProductLineParams(productLine.getCoolingAvg(), productLine.getCoolingDelta());
     }
 
-    @Scheduled(every = "1000s")
+    @Scheduled(every = "3s")
     void run() {
 	ProductionBean productionBean = null;
 	CoolingBean coolingBean = null;
+	String json = null;
 	boolean valid = false;
 	if (updateProductLine.getAndSet(false))
 	    setProductLineParams();
@@ -106,8 +99,10 @@ public class DeviceServiceImpl implements DeviceService {
 		LOGGER.info("Sending production data #{} to the server for validation \n\t{}", iteration,
 			productionBean);
 	    }
+
 	    // sends data to the server for validation
-	    valid = apiClientService.sendProductionData(productionBean);
+	    json = MAPPER.writeValueAsString(productionBean);
+	    valid = Boolean.valueOf(apiClientService.sendProductionData(json));
 
 	    if (!valid) {
 		LOGGER.info("PRODUCT #{} NOT VALIDATED", iteration);
@@ -115,7 +110,8 @@ public class DeviceServiceImpl implements DeviceService {
 	    }
 	    LOGGER.info("PRODUCT #{} VALIDATED", iteration);
 	    coolingBean = coolingService.cool();
-	    valid = apiClientService.sendCoolingData(coolingBean);
+	    json = MAPPER.writeValueAsString(coolingBean);
+	    valid = Boolean.valueOf(apiClientService.sendCoolingData(json));
 
 	    if (!valid) {
 		LOGGER.info("COOLING #{} ERROR", iteration);

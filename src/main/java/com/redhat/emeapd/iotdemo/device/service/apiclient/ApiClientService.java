@@ -12,9 +12,6 @@ import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
-import com.redhat.emeapd.iotdemo.device.domain.CoolingBean;
-import com.redhat.emeapd.iotdemo.device.domain.ProductionBean;
-
 /**
  * @author abattagl
  *
@@ -25,13 +22,13 @@ public interface ApiClientService {
 
     @GET
     @Path("/production/{data}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
-    boolean sendProductionData(@PathParam ProductionBean data) throws Exception;
+    String sendProductionData(@PathParam String data) throws Exception;
 
     @GET
     @Path("/cooling/{data}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
-    boolean sendCoolingData(@PathParam CoolingBean data) throws Exception;
+    String sendCoolingData(@PathParam String data) throws Exception;
 }
